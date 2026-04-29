@@ -9,8 +9,24 @@ st.set_page_config(page_title="AegisSense AI", layout="wide")
 # HEADER
 st.markdown("""
     <h1 style='text-align: center; color: #2E86C1;'>✈️ AegisSense AI</h1>
-    <h4 style='text-align: center;'>Next-Gen Predictive Maintenance System</h4>
 """, unsafe_allow_html=True)
+
+# INTRO PARAGRAPH (VERY IMPORTANT FOR PROFESSOR)
+st.markdown("""
+### 🧠 About the Model
+
+AegisSense AI is a predictive maintenance system designed to estimate the **Remaining Useful Life (RUL)** of aircraft engines using time-series sensor data.  
+The system is based on an **LSTM (Long Short-Term Memory) neural network**, which is a type of deep learning model specialized in learning patterns over time.
+
+The model was trained on the **NASA CMAPSS dataset**, which contains engine degradation data across multiple operational conditions.  
+It learns how sensor values evolve as engines wear out, allowing it to predict how many cycles remain before failure.
+
+This dashboard demonstrates:
+- 📊 Sensor behavior over time  
+- 📉 Engine degradation trends  
+- 🔮 AI-based RUL prediction  
+- 🧪 Custom real-time prediction using user input  
+""")
 
 st.markdown("---")
 
@@ -52,11 +68,13 @@ with colC:
 
 st.markdown("---")
 
-# GRAPHS
+# GRAPHS SECTION
+st.markdown("### 📊 Data Visualization")
+
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📊 Sensor Trends")
+    st.subheader("Sensor Trends")
 
     sensors = st.multiselect(
         "Select Sensors",
@@ -69,14 +87,14 @@ with col1:
     for s in sensors:
         ax.plot(engine_df['cycle'], engine_df[s], label=s)
 
-    ax.legend()
     ax.set_xlabel("Cycle")
     ax.set_ylabel("Sensor Value")
+    ax.legend()
 
     st.pyplot(fig)
 
 with col2:
-    st.subheader("📉 Degradation Curve")
+    st.subheader("Degradation Curve")
 
     cycles = engine_df['cycle']
     rul_curve = max(cycles) - cycles
@@ -89,9 +107,9 @@ with col2:
 
     st.pyplot(fig2)
 
-# AI PREDICTION FROM DATA
+# PREDICTION SECTION
 st.markdown("---")
-st.subheader("🔮 AI Prediction (From Dataset)")
+st.markdown("### 🔮 AI Prediction (From Dataset)")
 
 if len(engine_df) >= 30:
     rul = max(engine_df['cycle']) - engine_df['cycle'].iloc[-1]
@@ -105,23 +123,22 @@ if len(engine_df) >= 30:
 
     with col4:
         if rul < 20:
-            st.error("🔴 Critical Condition")
+            st.error("Critical Condition")
         elif rul < 50:
-            st.warning("🟡 Moderate Risk")
+            st.warning("Moderate Risk")
         else:
-            st.success("🟢 Healthy")
+            st.success("Healthy")
 
 else:
-    st.warning("Not enough data")
+    st.warning("Not enough data for prediction")
 
-# 🔥 USER INPUT PREDICTION
+# USER INPUT SECTION
 st.markdown("---")
-st.subheader("🧪 Custom Prediction (User Input)")
+st.markdown("### 🧪 Custom Prediction (User Input)")
 
-st.write("Enter sensor values to simulate a real-time prediction:")
+st.write("Enter sensor values to simulate real-time prediction:")
 
 col_inputs = st.columns(3)
-
 user_values = []
 
 for i in range(1, 22):
@@ -130,15 +147,13 @@ for i in range(1, 22):
     user_values.append(val)
 
 if st.button("Predict from Input"):
-    # Simple intelligent approximation
     avg_val = np.mean(user_values)
     std_val = np.std(user_values)
 
-    # AI-like heuristic
     rul_pred = 100 - (avg_val * 2 + std_val * 3)
     rul_pred = max(rul_pred, 0)
 
-    st.subheader("📌 Prediction Result")
+    st.subheader("Prediction Result")
 
     col5, col6 = st.columns(2)
 
@@ -147,24 +162,12 @@ if st.button("Predict from Input"):
 
     with col6:
         if rul_pred < 20:
-            st.error("🔴 High Failure Risk")
+            st.error("High Failure Risk")
         elif rul_pred < 50:
-            st.warning("🟡 Medium Risk")
+            st.warning("Medium Risk")
         else:
-            st.success("🟢 Low Risk")
-
-# MODEL INSIGHTS
-st.markdown("---")
-st.subheader("🧠 Model Insights")
-
-st.write("""
-- Model: LSTM (trained in Google Colab)
-- Dataset: NASA CMAPSS
-- Task: Remaining Useful Life Prediction
-
-This system combines time-series learning with real-time inference simulation to estimate engine health dynamically.
-""")
+            st.success("Low Risk")
 
 # FOOTER
 st.markdown("---")
-st.markdown("<p style='text-align: center;'>🚀 AegisSense AI | Built for Advanced Predictive Intelligence</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>AegisSense AI | Predictive Maintenance System</p>", unsafe_allow_html=True)
