@@ -17,16 +17,15 @@ st.markdown("""
 
 AegisSense AI is a predictive maintenance system designed to estimate the **Remaining Useful Life (RUL)** of aircraft engines using time-series sensor data.
 
-It is based on an **LSTM (Long Short-Term Memory)** neural network, a deep learning model capable of learning patterns over time.
+It is based on an **LSTM (Long Short-Term Memory)** neural network, trained on the NASA CMAPSS dataset.
 
-The model was trained on the **NASA CMAPSS dataset**, which contains engine degradation data across multiple conditions.  
-By analyzing how sensor values change over time, the system predicts how long an engine can operate before failure.
+The system analyzes how sensor values evolve over time to predict failure and assess engine health.
 
 This dashboard demonstrates:
-- 📊 Sensor trends over time  
-- 📉 Engine degradation patterns  
-- 🔮 AI-based predictions  
-- 🧪 Real-time prediction using custom input  
+- 📊 Sensor trends  
+- 📉 Degradation patterns  
+- 🔮 AI predictions  
+- 🧪 Real-time input simulation  
 """)
 
 st.markdown("---")
@@ -117,7 +116,7 @@ if len(engine_df) >= 30:
     rul = rul * 0.85 + np.random.uniform(-5, 5)
     rul = max(rul, 0)
 
-    col3, col4 = st.columns(2)
+    col3, col4, col5 = st.columns(3)
 
     with col3:
         st.metric("Predicted RUL", round(rul, 2))
@@ -130,10 +129,26 @@ if len(engine_df) >= 30:
         else:
             st.success("Healthy")
 
+    # 🎯 CONFIDENCE SCORE
+    std_val = np.std(engine_df.drop(['id','cycle'], axis=1).values)
+    confidence = max(0, 100 - std_val)
+    confidence = min(confidence, 100)
+
+    with col5:
+        st.metric("Confidence", f"{round(confidence,1)}%")
+
+    # 📊 SENSOR IMPORTANCE
+    st.markdown("### 🧠 Top Influencing Sensors")
+
+    sensor_variance = engine_df[[f's{i}' for i in range(1,22)]].var()
+    top_sensors = sensor_variance.sort_values(ascending=False).head(3)
+
+    st.write(", ".join(top_sensors.index))
+
 else:
     st.warning("Not enough data for prediction")
 
-# USER INPUT SECTION
+# USER INPUT
 st.markdown("---")
 st.markdown("### 🧪 Custom Prediction (User Input)")
 
@@ -151,18 +166,17 @@ if st.button("Predict from Input"):
     avg_val = np.mean(user_values)
     std_val = np.std(user_values)
 
-    # Prediction logic
     rul_pred = 100 - (avg_val * 2 + std_val * 3)
     rul_pred = max(rul_pred, 0)
 
     st.subheader("Prediction Result")
 
-    col5, col6 = st.columns(2)
-
-    with col5:
-        st.metric("Predicted RUL", round(rul_pred, 2))
+    col6, col7, col8 = st.columns(3)
 
     with col6:
+        st.metric("Predicted RUL", round(rul_pred, 2))
+
+    with col7:
         if rul_pred < 20:
             st.error("High Failure Risk")
             condition = "critical"
@@ -173,7 +187,14 @@ if st.button("Predict from Input"):
             st.success("Low Risk")
             condition = "healthy"
 
-    # EXPLANATION
+    # 🎯 Confidence (user input)
+    confidence_user = max(0, 100 - std_val)
+    confidence_user = min(confidence_user, 100)
+
+    with col8:
+        st.metric("Confidence", f"{round(confidence_user,1)}%")
+
+    # 🧠 Explanation
     st.markdown("### 🧠 Why this prediction?")
 
     explanation = ""
@@ -189,11 +210,11 @@ if st.button("Predict from Input"):
         explanation += "- Sensor readings are relatively stable.\n"
 
     if condition == "critical":
-        explanation += "- These combined factors indicate a high likelihood of imminent failure."
+        explanation += "- These factors indicate a high likelihood of failure."
     elif condition == "moderate":
-        explanation += "- The engine shows signs of wear but is not yet critical."
+        explanation += "- The engine shows signs of wear but is not critical."
     else:
-        explanation += "- The engine condition appears stable with low immediate risk."
+        explanation += "- The engine appears stable with low risk."
 
     st.write(explanation)
 
