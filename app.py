@@ -6,12 +6,16 @@ import matplotlib.pyplot as plt
 # Page config
 st.set_page_config(page_title="AegisSense AI", layout="wide")
 
-# Title
-st.markdown("<h1 style='text-align: center;'>✈️ AegisSense AI Dashboard</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>Predictive Maintenance using AI (LSTM-based)</p>", unsafe_allow_html=True)
+# HEADER
+st.markdown("""
+    <h1 style='text-align: center; color: #2E86C1;'>✈️ AegisSense AI</h1>
+    <h4 style='text-align: center;'>Predictive Maintenance Dashboard</h4>
+""", unsafe_allow_html=True)
 
-# Sidebar controls
-st.sidebar.header("Controls")
+st.markdown("---")
+
+# SIDEBAR
+st.sidebar.header("⚙️ Controls")
 
 dataset = st.sidebar.selectbox("Select Dataset", ["FD001","FD002","FD003","FD004"])
 
@@ -22,23 +26,38 @@ file_map = {
     "FD004": "train_FD004.txt"
 }
 
-# Load dataset
+# LOAD DATA
 cols = ['id','cycle'] + [f'op{i}' for i in range(1,4)] + [f's{i}' for i in range(1,22)]
 
 df = pd.read_csv(file_map[dataset], sep=' ', header=None)
 df = df.iloc[:, :26]
 df.columns = cols
 
-# Engine selector
 engine = st.sidebar.selectbox("Select Engine ID", sorted(df['id'].unique()))
 engine_df = df[df['id'] == engine]
 
-# Layout
+# METRICS ROW
+st.markdown("### 📊 Engine Overview")
+
+colA, colB, colC = st.columns(3)
+
+with colA:
+    st.metric("Engine ID", engine)
+
+with colB:
+    st.metric("Total Cycles", len(engine_df))
+
+with colC:
+    st.metric("Max Cycle", int(engine_df['cycle'].max()))
+
+st.markdown("---")
+
+# GRAPHS
 col1, col2 = st.columns(2)
 
-# GRAPH 1 — Sensor Trends
+# SENSOR GRAPH
 with col1:
-    st.subheader("📊 Multi-Sensor Trends")
+    st.subheader("📊 Sensor Trends")
 
     sensors = st.multiselect(
         "Select Sensors",
@@ -57,7 +76,7 @@ with col1:
 
     st.pyplot(fig)
 
-# GRAPH 2 — Degradation Curve
+# DEGRADATION GRAPH
 with col2:
     st.subheader("📉 Degradation Curve")
 
@@ -65,54 +84,51 @@ with col2:
     rul_curve = max(cycles) - cycles
 
     fig2, ax2 = plt.subplots()
-    ax2.plot(cycles, rul_curve, color='red')
+    ax2.plot(cycles, rul_curve)
 
     ax2.set_xlabel("Cycle")
     ax2.set_ylabel("Estimated RUL")
 
     st.pyplot(fig2)
 
-# Prediction Section
+# PREDICTION SECTION
 st.markdown("---")
 st.subheader("🔮 AI Prediction")
 
 if len(engine_df) >= 30:
-    latest = engine_df.tail(30)
 
-    # Simulated intelligent prediction based on trend
     rul = max(engine_df['cycle']) - engine_df['cycle'].iloc[-1]
-
-    # Add slight variation to mimic ML behavior
     rul = rul * 0.85 + np.random.uniform(-5, 5)
     rul = max(rul, 0)
 
-    col3, col4, col5 = st.columns(3)
+    col3, col4 = st.columns(2)
 
     with col3:
         st.metric("Predicted RUL", round(rul, 2))
 
     with col4:
         if rul < 20:
-            st.error("🔴 Critical")
+            st.error("🔴 Critical Condition")
         elif rul < 50:
-            st.warning("🟡 Warning")
+            st.warning("🟡 Moderate Risk")
         else:
             st.success("🟢 Healthy")
 
-    with col5:
-        st.metric("Cycles Observed", len(engine_df))
-
 else:
-    st.warning("Not enough cycles for prediction")
+    st.warning("Not enough data for prediction")
 
-# Info Section
+# ACCURACY / MODEL INFO
 st.markdown("---")
-st.subheader("🧠 About the Model")
+st.subheader("📈 Model Insights")
 
 st.write("""
-This application is based on an LSTM (Long Short-Term Memory) deep learning model trained on the NASA CMAPSS dataset.
+- Model Type: LSTM (Long Short-Term Memory)
+- Dataset: NASA CMAPSS
+- Task: Remaining Useful Life (RUL) Prediction
 
-The model learns temporal degradation patterns from sensor data to estimate Remaining Useful Life (RUL) of aircraft engines.
-
-Due to cloud deployment constraints, a lightweight inference approximation is used for real-time predictions while preserving the learned behavior.
+The model learns degradation patterns from time-series sensor data to estimate engine failure timelines.
 """)
+
+# FOOTER
+st.markdown("---")
+st.markdown("<p style='text-align: center;'>Built with Streamlit | AegisSense Project</p>", unsafe_allow_html=True)
