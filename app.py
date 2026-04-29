@@ -11,21 +11,22 @@ st.markdown("""
     <h1 style='text-align: center; color: #2E86C1;'>✈️ AegisSense AI</h1>
 """, unsafe_allow_html=True)
 
-# INTRO PARAGRAPH (VERY IMPORTANT FOR PROFESSOR)
+# INTRO
 st.markdown("""
 ### 🧠 About the Model
 
-AegisSense AI is a predictive maintenance system designed to estimate the **Remaining Useful Life (RUL)** of aircraft engines using time-series sensor data.  
-The system is based on an **LSTM (Long Short-Term Memory) neural network**, which is a type of deep learning model specialized in learning patterns over time.
+AegisSense AI is a predictive maintenance system designed to estimate the **Remaining Useful Life (RUL)** of aircraft engines using time-series sensor data.
 
-The model was trained on the **NASA CMAPSS dataset**, which contains engine degradation data across multiple operational conditions.  
-It learns how sensor values evolve as engines wear out, allowing it to predict how many cycles remain before failure.
+It is based on an **LSTM (Long Short-Term Memory)** neural network, a deep learning model capable of learning patterns over time.
+
+The model was trained on the **NASA CMAPSS dataset**, which contains engine degradation data across multiple conditions.  
+By analyzing how sensor values change over time, the system predicts how long an engine can operate before failure.
 
 This dashboard demonstrates:
-- 📊 Sensor behavior over time  
-- 📉 Engine degradation trends  
-- 🔮 AI-based RUL prediction  
-- 🧪 Custom real-time prediction using user input  
+- 📊 Sensor trends over time  
+- 📉 Engine degradation patterns  
+- 🔮 AI-based predictions  
+- 🧪 Real-time prediction using custom input  
 """)
 
 st.markdown("---")
@@ -68,7 +69,7 @@ with colC:
 
 st.markdown("---")
 
-# GRAPHS SECTION
+# GRAPHS
 st.markdown("### 📊 Data Visualization")
 
 col1, col2 = st.columns(2)
@@ -107,7 +108,7 @@ with col2:
 
     st.pyplot(fig2)
 
-# PREDICTION SECTION
+# DATASET PREDICTION
 st.markdown("---")
 st.markdown("### 🔮 AI Prediction (From Dataset)")
 
@@ -150,6 +151,7 @@ if st.button("Predict from Input"):
     avg_val = np.mean(user_values)
     std_val = np.std(user_values)
 
+    # Prediction logic
     rul_pred = 100 - (avg_val * 2 + std_val * 3)
     rul_pred = max(rul_pred, 0)
 
@@ -163,10 +165,37 @@ if st.button("Predict from Input"):
     with col6:
         if rul_pred < 20:
             st.error("High Failure Risk")
+            condition = "critical"
         elif rul_pred < 50:
             st.warning("Medium Risk")
+            condition = "moderate"
         else:
             st.success("Low Risk")
+            condition = "healthy"
+
+    # EXPLANATION
+    st.markdown("### 🧠 Why this prediction?")
+
+    explanation = ""
+
+    if avg_val > 50:
+        explanation += "- High average sensor values suggest increased engine stress.\n"
+    else:
+        explanation += "- Sensor values are within normal operating range.\n"
+
+    if std_val > 20:
+        explanation += "- High variability indicates unstable engine behavior.\n"
+    else:
+        explanation += "- Sensor readings are relatively stable.\n"
+
+    if condition == "critical":
+        explanation += "- These combined factors indicate a high likelihood of imminent failure."
+    elif condition == "moderate":
+        explanation += "- The engine shows signs of wear but is not yet critical."
+    else:
+        explanation += "- The engine condition appears stable with low immediate risk."
+
+    st.write(explanation)
 
 # FOOTER
 st.markdown("---")
