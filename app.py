@@ -220,4 +220,10 @@ if st.button("Predict from Input"):
 
 # FOOTER
 st.markdown("---")
-st.markdown("<p style='text-align: center;'>AegisSense AI | Predictive Maintenance System</p>", unsafe_allow_html=True)
+st.markdown("""
+<p style='text-align: center;'>
+AegisSense AI | Predictive Maintenance System<br><br>
+<b>Team Members:</b><br>
+Henal • Daksh • Hetv • Ravi • Paxaal
+</p>
+""", unsafe_allow_html=True)
